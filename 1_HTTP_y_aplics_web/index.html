@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Tema 1. HTTP y aplicaciones web</title>
+
+	<meta name="description" content="Tema 1: HTTP y aplicaciones web">
+	<meta name="author" content="Otto Colomina">
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/adi.css" id="theme">
+
+	<!-- For syntax highlighting -->
+	<link rel="stylesheet" href="lib/css/solarized_light.css">
+
+	<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+	
+	<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script>
+
+	<!--[if lt IE 9]>
+	<script src="lib/js/html5shiv.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+	<div class="reveal">
+
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section data-background="img/http_full.jpg">
+				<h1 class="fondo-blanco">Tema 1</h1>
+				<h1 class="fondo-blanco">HTTP y aplicaciones web</h1>
+			</section>
+			<section>
+				<h2>Indice</h2>
+				<ol>
+					<li>HTTP para sitios web estáticos</li>
+					<li>HTTP básico para aplicaciones web</li>
+					<li>Single Page Applications</li>
+					<li>APIs REST</li>	
+				</ol>	
+			</section>
+			<section data-background="rgb(92,218,133)">
+				<h1>1.1. HTTP para sitios web estáticos</h1>
+			</section>
+			<section>
+				<h2>Petición/respuesta HTTP</h2>
+				<ul>
+					<li>Un servidor web está a la escucha por un <strong>puerto</strong>, aceptando <strong>peticiones</strong> y devolviendo <strong>respuestas</strong> según el protocolo HTTP</li>
+					<ul>
+						<li>El protocolo especifica la sintaxis de peticiones y respuestas</li>
+						<li>El intercambio de información se hace en <strong>modo texto</strong></li>
+					</ul>
+				</ul>	
+						<img src="img/http.png" class="stretch">
+			</section>
+			<section>
+				<h2>Petición HTTP</h2>
+				<img src="img/peticion.png" >
+			</section>
+			<section>
+				<h2>Respuesta HTTP</h2>
+				<img src="img/respuesta.png">
+			</section>
+			<section>
+				<h2>1 página = N recursos</h2>
+				<ul>
+					<li>Una sola página contiene normalmente múltiples recursos (imágenes, código Javascript, flash,...). Cada uno de ellos requiere <strong>una transacción HTTP separada</strong></li>
+					<img src="img/recursos.png">
+				</ul>	
+			</section>
+			<section>
+				<h2>Métodos de petición</h2>
+				<ul>
+					<li><strong>GET:</strong> obtener un recurso</li>
+					<li>Otros métodos: PUT: actualizar recurso, DELETE: eliminar recurso
+						<ul>
+							<li>No están permitidos en la mayoría de recursos por motivos evidentes</li>
+							<li>De hecho, los navegadores no los permiten en el flujo de uso normal, se necesita Javascript para lanzar estos métodos</li>
+						</ul>
+					</li>
+							
+				</ul>	
+			</section>
+			<section>
+				<h2>Códigos de estado</h2>
+				<ul>
+					<li>Diferentes rangos numéricos indican distintos tipos de resultados</li>
+					<li>1xx <em>informational</em></li>
+					<li>2xx <em>success</em> (p.ej. <code>200 OK</code>)</li>
+					<li>3xx <em>redirection</em> (p. ej. <code>301 MOVED PERMANENTLY</code>)</li>
+					<li>4xx <em>client error</em> (p. ej. <code>404 NOT FOUND</code>, <code>400 BAD REQUEST</code>, <code>403 FORBIDDEN</code>, <code><a href="http://tools.ietf.org/html/rfc2324">418 I’M A TEAPOT</a></code> :) )</li>
+					<li>5xx server error</li>
+					<li>Consultar más en <a href="http://httpstatus.es">http://httpstatus.es</a></li>
+				<li>En la actualidad la mayoría son ignorados por el navegador, que se limita a mostrar el cuerpo de la respuesta.</li>	
+				</ul>
+			</section>
+			<section>
+				<h2>HTTP es un protocolo sin estado</h2>
+				<ul>
+					<li>No se guardan datos permanentes entre una petición/respuesta y la siguiente</li>
+					<li>Sin embargo, se debería recordar que estamos autentificados, qué contiene nuestro carrito de la compra, etc...</li>
+					<li>Ya veremos soluciones a este "dilema"</li>
+				</ul>	
+				<img src="img/xkcd.png" class="stretch">
+				<p class="texto-pie"><a href="http://xkcd.com/869/">http://xkcd.com/869/</a></p>
+			</section>			
+			<section data-background="rgb(92,218,133)">
+				<h1>1.2 HTTP básico para aplicaciones web</h1>
+			</section>	
+			<section>
+				<h2>Aplicaciones web y HTTP</h2>
+				<ul>
+					<li class="fragment">Una aplicación web es una <strong>colección de "programitas"</strong> o "rutinas". A cada uno se accede a través de una URL</li>
+					<li class="fragment">
+						La comunicación con las rutinas se hace a través de <strong>HTTP</strong>
+						<ul>
+							<li class="fragment">Una petición GET ya no significa "devuelve un recurso", sino <strong>"ejecuta un programa y devuelve el resultado"</strong></li>
+							<li class="fragment">El código de estado se puede interpretar como el <strong>resultado de la ejecución</strong>. p. ej, un 500 se debe a que el programa ha abortado</li>
+						</ul>	
+					</li>
+					<li class="fragment">Al igual que en línea de comandos podemos pasar <strong>parámetros</strong></li>
+				</ul>	
+			</section>
+			<section>
+				<h2>Aplicación web para consultar notas</h2>
+				<img src="img/app_web.png" class="stretch">
+			</section>	
+			<section>
+				<h2>GET vs. POST</h2>
+				<ul>
+					<li>En aplicaciones "clásicas" <strong>tienen la misma semántica</strong>, ejecutar un programa remoto pasándole datos en forma <code>parametro=valor&amp;parametro2=valor2...</code></li>
+					<li>Algunas diferencias
+					<ul>
+							<li>Los parámetros en GET se ven en la barra de direcciones del navegador</li>
+							<li>Los parámetros en POST tienen longitud ilimitada</li>
+					</ul>		
+					</li>		
+					
+				</ul>	
+			</section>
+			<section>
+				<h2>¿De dónde salen los parámetros?</h2>
+<pre>
+<code data-trim>
+<form action="login.php" method="post">
+  Usuario: <input type="text" name="login"> <br>
+  Contraseña: <input type="password" name="password"> <br>
+  <input type="submit" value="Entrar">
+</form>	
+</code>
+</pre>
+<form action="login.php" method="post">
+  Usuario: <input type="text" name="login"> <br>
+  Contraseña: <input type="password" name="password"> <br>
+  <input type="submit" value="Entrar">
+</form>
+			</section>	
+			<section>
+				<section>
+					<h2>Plantillas HTML en el servidor</h2>
+					<ul>
+						<li>Facilitan la tarea de generar HTML dinámicamente, ya que generar todo el HTML a base de "printfs" sería engorroso</li>
+						<li>Mezclan bloques de HTML con sentencias de un lenguaje de programación o con instrucciones especiales de control de flujo</li>
+						<li><a href="#" class="navigate-down">Ejemplos</a></li>
+					</ul>	
+				</section>
+				<section>
+					<h2>PHP</h2>
+					<img src="img/php.png">	
+				</section>
+				<section>
+					<h2>Mustache</h2>
+					<img src="img/mustache.png">
+				</section>
+			</section>	
+			<section>
+				<h2>Javascript</h2>
+				<ul>
+					<li>El código se descarga junto con el HTML y se interpreta en el navegador <strong>después de</strong> la petición/respuesta HTTP</li>
+					<li>Inicialmente se usaba para pequeños cálculos, validación de formularios, <a href="http://www.javascript-fx.com/mouse_trail/pinwheel/demo.html">efectos curiosos</a></li>			
+				</ul>	
+				<img class="stretch" src="img/js.png"></img>
+			</section>
+			<section>
+				<h2>Frontend vs. Backend</h2>
+				<p>Con Javascript aparece el mundo del <em>desarrollo frontend</em></p>
+				<img src="img/front_vs_back.png" class="stretch">
+				<p class="texto-pie">Charla: <a href="https://docs.google.com/presentation/d/1pA6reUNKqkfupSogZB4Q42Tk98VAq_loqkIDE-HSxAE/present#slide=id.p">"Picking a Technology Stack"</a>, Pamela Fox</p>
+			</section>	
+			<section>
+				<h2>Arquitectura típica de una aplicación clásica</h2>
+				<img src="img/app_clasica.png" class="stretch">
+				<p class="texto-pie">Charla: <a href="http://www.infoq.com/presentations/SpringOne-2GX-2012-Keynote-2">The New Application Architectures</a>, Adrian Colyer</p>
+			</section>	
+			<section data-background="rgb(92,218,133)">
+				<h1>1.3 Aplicaciones con AJAX</h1>	
+			</section>
+			<section>
+				<section>
+				<h2>AJAX</h2>	
+				<ul>
+					<li>Varias tecnologías (sobre todo JS) que permiten <strong>hacer peticiones al servidor sin refrescar la página completa</strong></li>
+					<li>Se puede actualizar solo parte del HTML con datos procedentes del servidor</li>
+					<li><a href="http://meneame.net">meneame (no AJAX)</a> vs <a href="http://peta.meneame.net">meneame (AJAX)</a></li> 
+				</ul>	
+			    </section>
+			    <section>
+				<img src="img/AJAX_vs_NO.png" class="stretch">
+			    </section>
+			</section>
+			<section>
+				<h2>Single Page Applications</h2>
+				<ul>
+					<li>Gracias a AJAX y a Javascript nos podemos llevar <strong>casi todo el código de la aplicación al navegador</strong>, convirtiendo el servidor en un <strong>API remoto</strong> para guardar/recuperar datos.</li>
+					<li>La aplicación es un único HTML y los cambios en el interfaz se hacen con JS, no navegando a otras páginas</li>
+				</ul>	
+			</section>		
+			<section>
+				<h2>Posible arquitectura de una S.P.A.</h2>
+				<img src="img/modern_webapp.png"></img>	
+			</section>
+			<section>
+				<h2>Ejemplo: Coursera</h2>
+				<img src="img/coursera.png" class="stretch"></img>
+				<p class="texto-pie">Presentación: <a href="http://frontend-architectures.appspot.com">Frontend architectures</a>, Pamela Fox</p>	
+			</section>
+			<section data-background="img/panacea.jpg">
+				<p class="fondo-blanco">Ninguna tecnología puede ser una panacea, y las S.P.A. no son una excepción</p>
+			</section>
+			<section data-background="rgb(92,218,133)">
+				<h1>1.4 APIs REST</h1>	
+			</section>
+			<section>
+				<h2>Recapitulando: aplicaciones "clásicas"</h2>
+				<ul>
+					<li class="fragment">Suelen usar <strong>plantillas</strong> del servidor</li>
+					<li class="fragment">Las URL suelen ser <strong>verbos</strong>, que indican <strong>acciones</strong>: <code>ponerNota</code>, <code>listarAlumnos</code></li>
+					<li class="fragment">Los datos se pasan en formato <code>nombre=valor</code>: <code>orden=asc&convoc=jul2014</code></li>
+				</ul>	
+			</section>
+		
+			<section>
+				<h2>Aplicaciones REST vs. "Clásicas"</h2>
+				<ul>
+					<li class="fragment">REST puede verse como un intento de <strong>volver a los principios de HTTP</strong></li>
+					<li class="fragment">En lugar de llamar a programas, <strong>operar sobre recursos</strong>, que no van a ser páginas HTML sino entidades de nuestra aplicación: alumnos, notas, asignaturas</li>
+					<li class="fragment">El tipo de operación se especifica con el <strong>método HTTP</strong>: PUT sobre una nota significa "actualizar una nota".</li>
+				</ul>	
+			</section>
+			<section>
+				<h2>Recursos en REST</h2>
+				<ul>
+					<li>Cada recurso se identifica con una URL única</li>
+					<li>Los recursos, y por tanto las URLs se suelen organizar jerárquicamente</li>
+				</ul>	
+					<pre>
+<code data-trim >
+/* todos los alumnos */
+http://miaplicacion.com/alumnos
+/* El alumno con DNI 12345678J */
+http://miaplicacion.com/alumnos/12345678J/
+/* La nota de julio de 2014 de ADI (cód 34039) del alumno anterior */
+http://miaplicacion.com/alumnos/12345678J/notas/34039/jul2014	
+</code>
+					</pre>				
+					
+			</section>
+			<section>
+				<h2>Métodos HTTP en REST</h2>
+				<ul>
+					<li>Los métodos <strong>POST/GET/PUT/DELETE</strong> se asocian respectivamente con las operaciones <strong>Crear/Leer/Actualizar/Borrar</strong> (CRUD), respectivamente</li>
+					<li>Así, obtener el listado de alumnos sería hacer
+					<pre>
+<code data-trim>
+GET miaplicacion.com/alumnos/
+</code>	
+</pre>
+					</li>	
+					<li>Solo nos falta un <strong>formato estandarizado</strong> para los datos</li>
+				</ul>	
+			</section>	
+			<section>
+				<h2>Intercambio de datos en REST</h2>
+				<ul>
+					<li><strong>JSON</strong>: formato estándar e independiente del lenguaje para representar objetos. Originario de Javascript</li>
+					<li>Es mucho más legible y flexible que el <code>nombre=valor&nombre2=valor2...</code>. Se pueden representar objetos compuestos de otros, arrays, ...</li>					
+				</ul>	
+<pre>
+<code data-trim class="stretch">
+{
+ nombre: "Pepe Pérez",
+ edad: 19, 
+ direccion: {
+    calle: "Pez",
+    num: 15}
+}
+</code>	
+</pre>				
+			</section>
+			<!--
+			<section>
+				<h2>Creación de un recurso: POST</h2>
+				<ul>
+					<li class="fragment">La URL es la de la colección donde queremos insertar el nuevo recurso</li>
+					<li class="fragment">El sistema le dará una nueva URL (normalmente la de la colección + un <code>id</code> único)</li>
+				</ul>	
+			</section>
+			-->	
+			<section>
+				<h2>¿Por qué REST en lugar de otras alternativas?</h2>
+				<p>REST no es más que <strong>un conjunto de convenciones</strong> que podrían ser de otro modo</p>
+				<img class="fragment stretch" src="img/bushphone.jpg">
+			</section>
+			<section>
+				<h2>¿Por qué REST en lugar de otras alternativas? (II)</h2>
+				<blockquote cite="http://www.infoq.com/presentations/linkedin-architecture-stack">Para diseñar un buen API para los servicios <strong>necesitamos usar algo que la gente conozca</strong>. Así que, aunque no hay nada superior desde el punto de vista técnico en REST y JSON sobre usar RPC con un protocolo de nivel más bajo, usar algo que la gente comprenda bien [...] ayuda mucho en el diseño del API
+				<footer>Jay Krebs, <a href="http://www.infoq.com/presentations/linkedin-architecture-stack">Lessons from Building and Scaling LinkedIn</a> (QCon,  NY 2013)
+</footer>
+				</blockquote>
+			</section>	
+			<section>
+				<h2>S.P.A. y REST</h2>
+				<ul>
+					<li>Casi siempre los APIs que usan las S.P.A. son de tipo REST</li>
+					<li>También se podrían hacer APIs web con URLs clásicas (verbos), solo usando GET/POST y con datos en formato <code>parámetro=valor</code> (¡Se han hecho "siempre"!)... solo que <strong>no serían tan cool</strong></li>
+				</ul>	
+			</section>
+			<section data-background="img/cool-cat.jpg">
+				<p class="fondo-blanco">Y siempre hay que ser <em>cool</em></p>
+			</section>	
+		</div>
+
+	</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.min.js"></script>
+
+	<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+</body>
+</html>
