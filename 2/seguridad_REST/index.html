@@ -136,6 +136,9 @@ session[:miUsuario] = u
 <h2>Autentificación con sesiones</h2>
 <p>Tras hacer login correctamente, guardamos en la sesión un <em>flag</em> indicando que el cliente se ha autentificado OK</p>
 <pre><code class="language-ruby" data-trim>
+require 'rack'
+require 'sinatra'
+
 use Rack::Session::Pool, :expire_after => 60*60
 
 #aqui llegariamos con login?nombre=pepe&password=pepe
