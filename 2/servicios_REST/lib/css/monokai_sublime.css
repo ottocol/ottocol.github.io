@@ -1,0 +1,151 @@
+/*
+
+Monokai Sublime style. Derived from Monokai by noformnocontent http://nn.mit-license.org/
+
+*/
+.reveal pre {
+  width: 100%;  
+}
+
+.reveal pre code {
+  display: block;
+  padding: 0.5em;
+  background: #23241f;
+}
+pre,
+pre .tag,
+.css pre .rules,
+.css pre .value,
+.css pre .function
+pre .preprocessor,
+pre .pragma {
+  color: #f8f8f2;
+}
+
+pre .strongemphasis,
+pre .strong,
+pre .emphasis {
+  color: #a8a8a2;
+}
+
+pre .bullet,
+pre .blockquote,
+pre .horizontal_rule,
+pre .number,
+pre .regexp,
+.alias pre .keyword,
+pre .literal,
+pre .hexcolor {
+  color: #ae81ff;
+}
+
+pre .tag pre .value,
+pre .code,
+pre .title,
+.css pre .class,
+pre .class pre .title:last-child {
+  color: #a6e22e;
+}
+
+pre .link_url {
+  font-size: 80%;
+}
+
+pre .strong,
+pre .strongemphasis {
+  font-weight: bold;
+}
+
+pre .emphasis,
+pre .strongemphasis,
+pre .class pre .title:last-child {
+  font-style: italic;
+}
+
+pre .keyword,
+pre .function,
+pre .change,
+pre .winutils,
+pre .flow,
+.lisp pre .title,
+.clojure pre .built_in,
+.nginx pre .title,
+.tex pre .special,
+pre .header,
+pre .attribute,
+pre .symbol,
+pre .symbol pre .string,
+pre .tag pre .title,
+pre .value,
+.alias pre .keyword:first-child,
+.css pre .tag,
+.css .unit,
+.css pre .important {
+  color: #F92672;
+}
+
+pre .function pre .keyword,
+pre .class pre .keyword:first-child,
+pre .constant,
+.css pre .attribute {
+  color: #66d9ef;
+}
+
+pre .variable,
+pre .params,
+pre .class pre .title {
+  color: #f8f8f2;
+}
+
+pre .string,
+.css pre .id,
+pre .subst,
+.haskell pre .type,
+.ruby pre .class pre .parent,
+pre .built_in,
+.sql pre .aggregate,
+.django pre .template_tag,
+.django pre .variable,
+.smalltalk pre .class,
+.django pre .filter pre .argument,
+.smalltalk pre .localvars,
+.smalltalk pre .array,
+pre .attr_selector,
+pre .pseudo,
+pre .addition,
+pre .stream,
+pre .envvar,
+.apache pre .tag,
+.apache pre .cbracket,
+.tex pre .command,
+pre .prompt,
+pre .link_label,
+pre .link_url {
+  color: #e6db74;
+}
+
+pre .comment,
+pre .javadoc,
+.java pre .annotation,
+.python pre .decorator,
+pre .template_comment,
+pre .pi,
+pre .doctype,
+pre .deletion,
+pre .shebang,
+.apache pre .sqbracket,
+.tex pre .formula {
+  color: #75715e;
+}
+
+.coffeescript .javascript,
+.javascript .xml,
+.tex pre .formula,
+.xml .javascript,
+.xml .vbscript,
+.xml .css,
+.xml pre .cdata,
+.xml .php,
+.php .xml {
+  opacity: 0.5;
+}

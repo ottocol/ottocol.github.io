@@ -1,0 +1,158 @@
+/*
+
+XCode style (c) Angel Garcia <angelgarcia.mail@gmail.com>
+
+*/
+
+pre code {
+  display: block; padding: 0.5em;
+  background: #fff; color: black;
+}
+
+pre .comment,
+pre .template_comment,
+pre .javadoc,
+pre .comment * {
+  color: #006a00;
+}
+
+pre .keyword,
+pre .literal,
+.nginx pre .title {
+  color: #aa0d91;
+}
+.method,
+pre .list pre .title,
+pre .tag pre .title,
+.setting pre .value,
+pre .winutils,
+.tex pre .command,
+.http pre .title,
+pre .request,
+pre .status {
+  color: #008;
+}
+
+pre .envvar,
+.tex pre .special {
+  color: #660;
+}
+
+pre .string {
+  color: #c41a16;
+}
+pre .tag pre .value,
+pre .cdata,
+pre .filter pre .argument,
+pre .attr_selector,
+.apache pre .cbracket,
+pre .date,
+pre .regexp {
+  color: #080;
+}
+
+pre .sub pre .identifier,
+pre .pi,
+pre .tag,
+pre .tag pre .keyword,
+pre .decorator,
+.ini pre .title,
+pre .shebang,
+pre .prompt,
+pre .hexcolor,
+pre .rules pre .value,
+.css pre .value pre .number,
+pre .symbol,
+pre .symbol pre .string,
+pre .number,
+.css pre .function,
+.clojure pre .title,
+.clojure pre .built_in,
+pre .function pre .title,
+.coffeescript pre .attribute {
+  color: #1c00cf;
+}
+
+pre .class pre .title,
+.haskell pre .type,
+.smalltalk pre .class,
+pre .javadoctag,
+pre .yardoctag,
+pre .phpdoc,
+pre .typename,
+pre .tag pre .attribute,
+pre .doctype,
+pre .class pre .id,
+pre .built_in,
+.setting,
+pre .params,
+.clojure pre .attribute {
+  color: #5c2699;
+}
+
+pre .variable {
+ color: #3f6e74;
+}
+.css pre .tag,
+pre .rules pre .property,
+pre .pseudo,
+pre .subst {
+  color: #000;
+}
+
+.css pre .class,
+.css pre .id {
+  color: #9B703F;
+}
+
+pre .value pre .important {
+  color: #ff7700;
+  font-weight: bold;
+}
+
+pre .rules pre .keyword {
+  color: #C5AF75;
+}
+
+pre .annotation,
+.apache pre .sqbracket,
+.nginx pre .built_in {
+  color: #9B859D;
+}
+
+pre .preprocessor,
+pre .preprocessor *,
+pre .pragma {
+  color: #643820;
+}
+
+.tex pre .formula {
+  background-color: #EEE;
+  font-style: italic;
+}
+
+.diff pre .header,
+pre .chunk {
+  color: #808080;
+  font-weight: bold;
+}
+
+.diff pre .change {
+  background-color: #BCCFF9;
+}
+
+pre .addition {
+  background-color: #BAEEBA;
+}
+
+pre .deletion {
+  background-color: #FFC8BD;
+}
+
+pre .comment pre .yardoctag {
+  font-weight: bold;
+}
+
+.method pre .id {
+  color: #000;
+}

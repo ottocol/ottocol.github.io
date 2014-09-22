@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Tema 2. Servicios web REST. Parte 2: seguridad</title>
+
+	<meta name="description" content="Tema 1: HTTP y aplicaciones web">
+	<meta name="author" content="Otto Colomina">
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/adi.css" id="theme">
+
+	<!-- For syntax highlighting -->
+
+	<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+	<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script>
+
+	<!--[if lt IE 9]>
+	<script src="lib/js/html5shiv.js"></script>
+	<![endif]-->
+    <link rel="stylesheet" type="text/css" href="plugin/prism/prism.css">
+    <script type="text/javascript" src="plugin/prism/prism.js"></script>
+</head>
+
+<body>
+
+	<div class="reveal">
+
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+<section data-background="rgb(92,218,133)">
+	<h1>Tema 2, parte II</h1>
+	<h1>Autentificación en servicios web REST</h1>
+</section>
+<section>
+	<h2>Indice</h2>
+	<ol>
+        <li>HTTP Basic</li>
+		<li>Cookies</li>
+		<li>Tokens</li>
+	</ol>	
+</section>
+<section data-background="rgb(92,218,133)">
+    <h1>2b.1 Autentificación con HTTP Basic</h1>
+</section>
+<section>
+    <h2>HTTP Basic</h2>
+    <ul>
+        <li>Mecanismo estándar de autentificación en HTTP</li>
+        <li>Como HTTP <strong>no tiene estado</strong>, hay que enviar las credenciales <strong>en cada petición</strong></li>
+        <li>Se envía login y password en Base64 (=¡sin cifrar!) dentro de la cabecera <code>Authorization</code></li>
+<pre><code class="language-http" data-trim>
+Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+</code></pre>
+    </ul>
+</section>
+<section>
+    <h2>HTTP Basic (2)</h2>
+    <ul>
+       <li>Si se intenta acceder a un recurso protegido sin cabecera <code>Authorization</code>, el servidor responde con un <em>status</em> 401 y una cabecera <code>WWW-Authenticate</code></li>
+<pre><code class="language-http">
+401 UNAUTHORIZED HTTP/1.1
+...
+WWW-Authenticate: Basic realm="nombre del realm"</code></pre> 
+    </ul>
+</section>
+<section>
+    <h2>A favor y en contra de HTTP Basic</h2>
+ <ul>
+    <li>A favor:
+    <ul>
+        <li>Estándar HTTP, funciona <em>out-of-the-box</em></li>
+        <li>Es RESTful, no obliga a mantener estado en el servidor</li>
+    </ul> 
+    </li>
+    <li>En contra:
+    <ul>
+       <li>Login y password se transmiten sin cifrar. Por tanto hay que usar HTTPs. Una mejora es <strong>HTTP Digest</strong>, que hace un <em>hash</em> MD5 de los datos.</li> 
+       <li>Estamos enviando datos cuya privacidad es crítica en cada petición</li>
+    </ul>
+    </li> 
+ </ul>   
+</section>
+<section data-background="rgb(92,218,133)">
+	<h1>2b.2 Autentificación basada en cookies</h1>
+</section>
+<section>
+ <h2>Cookies</h2>
+<ul>
+<li>Aunque HTTP es originalmente un protocolo sin estado, en la mayoría de aplicaciones web del MundoReal™ existe el concepto de "sesión"
+<ul><li>Se recuerdan ciertos datos mientras vamos navegando entre páginas (usuario autentificado, carro de la compra, ...)</li></ul></li>
+<li><strong>Cookies</strong>: extensión al protocolo HTTP que permite a cliente y servidor almacenar datos "persistentes" entre ciclos petición/respuesta</li></ul>
+</section>
+<section>
+<h2>Mantenimiento de sesiones con cookies</h2>
+<ul>
+    <li>Casi todos los <em>frameworks</em> de programación del servidor pueden generar automáticamente <strong>cookies pseudoaleatorias</strong> bastante largas para ser usadas como “id de sesión”</li>
+    <li>Esto permite almacenar datos en el servidor exclusivos de cada usuario.
+    El “id de sesión” sirve como “clave” para recuperar los datos</li
+</ul>    
+<img class="stretch" src="img/cookie_sesion.png">
+</section>
+<section>
+<h2>API de sesiones</h2>    
+<p>En casi todos los <em>frameworks</em> las cookies de sesión son transparentes al desarrollador. Se nos da un API mediante el que podemos almacenar/recuperar objetos en la "sesión"</p>
+<div class="fragment">
+<pre><code class="language-java">
+HttpSession session = request.getSession();
+Usuario u = new Usuario("login", "password")
+session.setAttribute("miUsuario", u);
+...
+Usuario u = session.getAttribute("miUsuario");    
+</code></pre>
+<p class="texto-pie">Ejemplo Java</p>
+</div>
+<div class="fragment">
+<pre><code class="language-ruby" data-trim>
+use Rack::Session::Pool, :expire_after => 60*60
+...
+u = Usuario.new('login', 'password')
+session[:miUsuario] = u
+...    
+</code></pre>
+<p class="texto-pie">Ejemplo Sinatra</p>
+</div>
+</section>
+<section>
+<h2>Autentificación con sesiones</h2>
+<p>Tras hacer login correctamente, guardamos en la sesión un <em>flag</em> indicando que el cliente se ha autentificado OK</p>
+<pre><code class="language-ruby" data-trim>
+use Rack::Session::Pool, :expire_after => 60*60
+
+#aqui llegariamos con login?nombre=pepe&password=pepe
+get '/login' do
+  if (params[:nombre] ... #aquí habría que comprobar que login y password son correctos
+     session[:usuario] = params[:nombre]
+end
+
+get '/ver_recurso_protegido' do
+  if (session[:usuario].nil?)
+     status 403
+  else
+     "hola #{session[:usuario]}"
+  end
+end  
+
+get '/logout' do
+  session.clear
+  "adios"
+end   
+</code></pre>    
+</section>
+<section>
+<h2>Cookies vs. HTTP Basic</h2>
+<p>A favor de las <em>cookies</em></p>
+<ul>
+  <li>Las sesiones basadas en <em>cookies</em> vienen ya implementadas en la mayoría de plataformas de desarrollo web en el servidor</li>
+  <li>Si alguien intercepta la comunicación, es mucho más sencillo invalidar la sesión que obligar al usuario a cambiar el password</li>  
+</ul>
+</section>
+<section data-background="rgb(92,218,133)">
+    <h1>2b.3. Autentificación basada en tokens</h1>
+</section>
+<section>
+<h2>Tokens</h2>
+<ol>
+    <li>Cuando se hace login correctamente el servidor nos devuelve un <strong>token</strong> (valor idealmente único e imposible de falsear)
+    <li>A partir de este momento para cualquier operación restringida debemos enviar el token en la petición</li>    
+</ol>    
+<p>Como se ve, es similar a la idea de cookies como identificadores de sesión, solo que implementada por nosotros en lugar del navegador</p>
+</section>
+<section>
+<h2>JSON Web Token (JWT)</h2>
+<ul>
+    <li><a href="http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html">Estándar IETF</a>. Hay implementación en multitud de lenguajes.</li>
+    <li>Es una cadena formada por 3 partes:
+        <ol>
+            <li class="fragment"><strong>Cabecera</strong>: indica el tipo de token y el algoritmo de firma. Se codifica en Base64. Ejemplo: <code>{"typ"=>"JWT", "alg"=>"HS256"}</code> (indica que esto es un "JWT" y se firmará con HMAC SHA-256)</li>
+            <li class="fragment"><strong>Payload</strong>: lo que queremos almacenar en el token en formato JSON (p.ej. <code>{"login"=>"adi"}</code>) y codificado en Base64URL</li>
+            <li class="fragment"><strong>Firma</strong>: se aplica un algoritmo de <em>hash</em> sobre la cabecera, el payload y una clave secreta y se pasa a Base64URL</li>
+            <li class="fragment">Las tres partes se concatenan con '.'</li>
+        </ol></li>    
+</ul>
+<pre class="fragment"><code class="language-bash" data-trim>
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJob2xhIjoibXVuZG8ifQ.pJPDprjxsouVfaaXau-Fyspj6rpKc7_hCui1RSaERAE    
+</code></pre>    
+</section>
+<section>
+<h2>Comprobar un JWT</h2>
+<ul>
+<li>Se vuelve a aplicar el <em>hash</em> sobre la cabecera y el <em>payload</em> (más la clave secreta). Si no coincide con la firma, el token no es válido.</li>
+<li class="fragment">En teoría no se puede generar un token falso si no se conoce la clave secreta, y esta no se puede averiguar a partir de un token auténtico</li>
+<li class="fragment">Cuidado, <strong>todo se transmite "en claro"</strong>: Base64 es una codificación, no un cifrado. Por tanto normalmente habrá que usar HTTPS si no se quiere que el <em>payload</em> sea legible</li>
+</ul>
+</section>
+<section>
+<h2>¿Dónde viaja el JWT?</h2>
+<ul>
+    <li><strong>Generado por el servidor</strong>: no hay un estándar. Por ejemplo, en el cuerpo de la respuesta</li>
+    <li><strong>Del cliente al servidor</strong> para autentificarse:
+        <ul>
+<li>En HTTP para enviar credenciales se usa la cabecera <code>Authorization</code> </li>
+<li>Por semejanza con OAuth, que emplea el concepto de "bearer token", se usa el formato
+<pre><code class="language-http" data-trim>
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+</code></pre>  
+</li>
+        </ul>    
+
+    </li>
+</ul>    
+</section>
+<section>
+<h2>Ejemplo en Ruby</h2>
+<pre><code class="language-ruby" data-trim>
+> require 'jwt'
+> token = JWT.encode({"login"=>"pepe"},'secret')
+> JWT.decode(token, 'secret')
+=> [{"login"=>"pepe"}, {"typ"=>"JWT", "alg"=>"HS256"}]  #devuelve payload y cabecera
+> token = token + "a"                                   #manipulamos el token y...
+> JWT.decode(token, 'secret')
+JWT::DecodeError: Signature verification failed         #falla la comprobación
+    from /Library/Ruby/Gems/2.0.0/gems/jwt-1.0.0/lib/jwt.rb:119:in `verify_signature'
+    ...
+</code></pre>  
+<p class="texto-pie">Ejemplo interactivo con 'irb'. Para instalar 'jwt': <code>sudo gem install jwt</code> </p> 
+
+</section>  
+<section>
+    <h2>Fecha de expiración</h2>
+    <ul>
+        <li>En el <em>payload</em> se suele incluir una fecha de expiración del <em>token</em>. En el estándar se especifica el uso de <code>exp</code> (con el nº segundos desde el 1/1/1970)
+<pre data-trim><code class="language-ruby" data-trim>
+require 'Time'
+require 'jwt'
+
+token = JWT.encode({"login"=>"pepe", "exp"=>Time.now.to_i},'secret')</code>
+</pre>
+        <li>De paso solucionamos el problema de que el mismo <em>payload</em> siempre genera el mismo JWT si no cambiamos el <em>secret</em></li>
+    </ul>    
+</section>
+<section>
+<h2>Cookies vs. Tokens</h2>
+<ul>
+    <li>Ventajas de las cookies
+    <ul><li>Las sesiones estándar de PHP,  JavaEE, .NET, Rails, etc. usan cookies por defecto y ya nos lo dan todo implementado. Los tokens hay que gestionarlos "manualmente".</li></ul>
+</li>
+<li>Ventajas de los tokens
+    <ul>
+    <li>Se pueden usar también en aplicaciones nativas (p.ej. móviles)</li>
+    <li>El dominio del servicio de autenticación puede ser distinto al del API</li></ul></li>
+</ul>    
+</section>
+<section data-background="rgb(92,218,133)">
+    <h1>1.3. HTTP Basic</h1>
+</section>
+<section>
+   <h2>TO-DO</h2>
+</section>
+</div>
+</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.min.js"></script>
+
+	<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+</body>
+</html>

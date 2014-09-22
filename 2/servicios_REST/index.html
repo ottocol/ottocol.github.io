@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Tema 2. Servicios web REST</title>
+
+	<meta name="description" content="Tema 1: HTTP y aplicaciones web">
+	<meta name="author" content="Otto Colomina">
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/adi.css" id="theme">
+
+	<!-- For syntax highlighting -->
+	<link rel="stylesheet" href="lib/css/railscasts.css">
+
+	<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+	<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script>
+
+	<!--[if lt IE 9]>
+	<script src="lib/js/html5shiv.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+	<div class="reveal">
+
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section data-background="rgb(92,218,133)">
+				<h1 class="fondo-blanco">Tema 2</h1>
+				<h1 class="fondo-blanco">Servicios web REST</h1>
+			</section>
+			<section>
+				<h2>Indice</h2>
+				<ol>
+					<li>REST básico</li>
+					<li>Diseño de URLs</li>
+					<li>Representación de los recursos</li>
+					<li>Caches</li>
+                    <li>HATEOAS</li>
+				</ol>	
+			</section>
+			<section data-background="rgb(92,218,133)">
+				<h1>2.1 REST básico</h1>
+			</section>
+			<section>
+				<h2>Resumen de REST</h2>
+				<p>Las llamadas al API se implementan como peticiones HTTP, en las que:</p>
+<ul><li>La URL representa el recurso</li> 
+<li>El método HTTP representa la operación</li>
+<li>El código de estado HTTP representa el resultado</li>
+<li>Como formato de intercambio de datos usaremos un estándar (normalmente JSON por su legibilidad y facilidad de manejo desde Javascript)</li></ul>
+			</section>	
+			<section>
+				<h2>Crear recursos</h2>
+				<ul>
+					<li>En general, la URL estará "abierta", apuntando a la colección de recursos. El nuevo recurso todavía no tiene un <code>id</code>
+<pre><code class="no-highlight" data-trim>
+http://api.ua.es/asignaturas/ADI_34039/anuncios
+http://api.change.org/peticiones/2/firmas
+</code></pre>
+					</li>
+					<li>El método debe ser <strong>POST</strong>
+					<ul>
+						<li>Excepción: se usaría PUT cuando conocemos el id del recurso (p.ej. insertar alumno identificándolo con DNI)</li>
+					</ul>
+					<li>Se envía el nuevo recurso en el cuerpo de la petición
+<pre><code data-trim>
+{"caducidad":"2014-12-12", 
+ "autor":"otto@ua.es", 
+ "texto":"mañana no hay clase de teoría"}
+</code></pre>
+					</li>
+
+					</li>
+				</ul>	
+			</section>	
+			<section>
+				<h2>Crear recurso con <em>id</em> conocido</h2>
+				<p>Igual que antes, pero</p>
+				<ul>
+					<li>La <strong>URL</strong> incluirá el <code>id</code>
+<pre><code class="http" data-trim>
+http://api.ua.es/alumnos/123456J
+http://api.biblioteca.ua.es/libros/978-3-16-148410-0
+</code></pre>
+					</li>
+					<li>El método será <strong>PUT</strong></li>
+				</ul>	
+			</section>
+			<section>
+				<h2>Crear recurso: resultado</h2>
+				<ul>
+					<li>Estados posibles:
+					<ul>	
+				<li>201 (Recurso creado correctamente)</li>
+				<li>403 (Acceso prohibido)</li>
+				<li>400 (petición incorrecta, p.ej. falta un campo o su valor no es válido)</li>
+				<li>500 (Error del servidor, p.ej. se ha caído la BD)</li>	
+			</ul></li>
+				<li>Cómo se devuelve el recurso creado:
+					<ul>
+					<li>La convención "ortodoxa" es devolver la URL como valor de la cabecera HTTP <code>Location</code> de la respuesta</li>
+<pre><code class="http" data-trim>
+201 CREATED HTTP/1.1
+Location: http://api.ua.es/asignaturas/ADI_3409/anuncios/1245
+...
+</code></pre>					
+
+					<li>También se puede devolver el recurso en sí en el cuerpo de la respuesta (p.ej. es lo que espera Backbone)
+<pre><code data-trim>
+{"id":"1245",
+ "caducidad":"2014-12-12", 
+ "autor":"otto@ua.es", 
+ "texto":"mañana no hay clase de teoría"}
+</code></pre>
+					</li>
+				</ul>
+				</li>
+			</ul>
+			</section>
+<section>
+	<h2>Actualizar recurso</h2>
+<ul>
+	<li><strong>URL</strong> del recurso ya existente</li>
+<li>Método HTTP <strong>PUT</strong></li>
+<li><strong>Nuevos datos</strong>: según la ortodoxia REST, actualizar significaría cambiar TODOS los datos. 
+	<ul>
+		<li>PATCH es un nuevo método HTTP (año 2010) para cambiar solo ciertos datos. Algunos servidores/<em>frameworks</em> de programación web todavía no lo soportan.</li>
+	</ul>	
+</li>
+<li><strong>Resultados posibles</strong>:
+<ul>
+<li>200 (Recurso modificado correctamente)</li>
+<li>404 (recurso no existente)</li>
+<li>Errores ya vistos con POST (400, 500, 403 ...)</li>
+</ul>	
+</li>
+</<ul>
+</section>
+<section>
+	<h2>Eliminar recurso</h2>
+<ul>
+	<li>URL del recurso a eliminar </li>
+	<li>Método <strong>DELETE</strong></li>
+<li><strong>Resultados posibles</strong>:
+<ul>
+<li>200 (Recurso eliminado correctamente)</li>
+<li>Errores ya vistos con PUT (400, 403, 404, 500, ...)</li>
+</ul>	
+</li>
+<li>Tras ejecutar el DELETE con éxito, las siguientes peticiones GET a la URL del recurso deberían devolver 404</li>
+</ul>
+</section>
+
+<section>
+	<h2>No es REST todo lo que reluce</h2>
+	<img class="stretch" src="img/twitter_api.png">
+	<p class="texto-pie"><a href="https://dev.twitter.com/docs/api/1.1">https://dev.twitter.com/docs/api/1.1</a></p>
+</section>	
+<section>
+<h2>REST Formalmente</h2>
+<p>Tiene su origen en <a href="www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">la tesis</a> de <a href="https://twitter.com/fielding">Roy Fielding</a></p>
+<p>Implica 6 condiciones:</p>
+<ul>
+<li>Cliente-servidor</li>
+<li>Interfaz uniforme
+<ul>
+<li>Indentificación de los recursos</li>
+<li>Representaciones estándar</li>
+<li>Mensajes auto-descriptivos</li>
+<li>Hypermedia as The Engine of The Application State (HATEOAS)</li>
+</ul>	
+</li>
+<li>Sin estado</li>
+<li>Cacheable</li>
+<li>Capas (proxys de modo transparente)</li>
+<li>Código "bajo demanda" (opcional)</li>
+</ul>		
+<img src="img/roy_fielding.png" class="right_vertical_center">
+</section>	
+<section data-background="rgb(92,218,133)">
+	<h1>2.2 Diseño de URLs</h1>
+</section>
+<section>
+	<h2>URLs que no son recursos típicos</h2>
+
+<ul>
+<li>Cálculos, procesamiento de información, búsquedas, etc.
+<pre><code class="no-highlight" data-trim>
+http://api.mapas.com/calcularRuta?inicio=Alicante&amp;fin=Madrid
+http://api.change.org/peticiones/buscar?titulo=salvemos&amp;ordenarPor=fecha
+</code></pre>	
+</li>
+<li>Operaciones que podrían verse como CRUD pero no de los recursos que vamos a representar
+<pre><code class="no-highlight" data-trim>
+http://api.ua.es/estudiantes/acb34/enviar-sms</code></pre>
+<p>Esto podría haber sido un "create" del recurso SMS, pero supongamos que  hemos decidido no representar los SMS como recurso
+</p></li>
+</ul>
+</section>
+<section>
+	<h2>Paginación y respuestas parciales</h2>
+<ul>
+<li>En búsquedas es común usar paginación de resultados. Normalmente se especifican los resultados deseados con parámetros HTTP
+<pre><code class="no-highlight" data-trim>
+https://graph.facebook.com/10150146071791729/photos?offset=5&amp;limit=2
+</code></pre>
+</li>
+<li>Respuestas parciales: no recibir todo el objeto, solo algunos campos
+(no hay un estándar)
+<pre><code class="no-highlight" data-trim>
+https://graph.facebook.com/10150146071791729/photos?fields=id,picture
+http://api.linkedin.com/v1/companies/1337:(id,name,description,logo-url)
+</code></pre>
+</li>
+</ul>
+</section>	
+<section>
+<h2>Versiones del API</h2>
+<p>Es una práctica común que la versión del API forme parte de la URL del recurso</p>
+<pre><code class="no-highlight" data-trim>
+http://www.example.org/v1/customer/1234
+http://www.example.org/v2/customer/1234
+http://www.example.org/customer/1234?version=v3
+http://v4.example.org/customer/1234</code></pre>
+<img class="stretch" src="img/foursquare_api.png">
+</section>
+<section data-background="rgb(92,218,133)">
+	<h1>2.3 Representación de los recursos</h1>
+</section>
+<section>
+<h2>Formato de los datos</h2>
+<p>Aunque en la actualidad <strong>JSON</strong> es el formato dominante, no hace mucho lo era <strong>XML</strong>. En realidad se puede usar cualquier formato estándar, por ejemplo Atom/RSS</p>
+<pre><code data-trim>
+<rss version="2.0" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule">
+   <channel>
+      <language>en</language>
+      <creativeCommons:license>http://creativecommons.org/licenses/by-nc-sa/2.0/uk/</creativeCommons:license>
+            <pubDate>Mon, 9 Dec 2013 16:33:02 +0000</pubDate>
+      <lastBuildDate>Mon, 9 Dec 2013 16:33:02 +0000</lastBuildDate>
+            <ttl>5</ttl>
+      <docs>http://www.audioscrobbler.net/data/webservices</docs>      
+      <title>RJ's Recently Played Tracks</title>
+      <link>http://www.last.fm/user/RJ</link>
+      <description>Last 10 tracks submitted to Last.fm</description>
+      <item>
+         <title>Xzibit – Paparazzi Live And Video</title>
+         <link>http://www.last.fm/music/Xzibit/_/Paparazzi+Live+And+Video</link>
+         <pubDate>Mon, 9 Dec 2013 16:33:02 +0000</pubDate>
+         <guid>http://www.last.fm/user/RJ#1386606782</guid>
+         <description>http://www.last.fm/music/Xzibit</description>
+      </item>
+      ...
+</code></pre>
+<p class="texto-pie">Ejemplo del API de last.fm</p>      
+</section>
+<section>
+<h2>Colecciones de datos</h2>
+<p><strong>Paginación:</strong> se aconseja incluir enlaces a la página anterior/siguiente</p>
+<pre><code data-trim>
+{
+ "total":"150",
+ "contenido": [
+  {"titulo":"Juego de tronos", "autor":"George R.R. Martin"},
+  {"titulo":"El nombre del viento", "autor":"Patrick Rothfuss"},
+  {"titulo":"El mundo del río", "autor":"Philip Jose Farmer"}
+  ...
+ ]
+ "link": {
+   "rel":"prev"
+   "href":"http://miapi.com/libros?inicio=1&cantidad=10"
+ }
+ "link": {
+   "rel":"next"
+   "href":"http://miapi.com/libros?inicio=21&cantidad=10"
+ }
+ "link": {
+   "rel":"self"
+   "href":"http://miapi.com/libros?inicio=11&cantidad=10"
+ }
+} 
+</code></pre>
+</section>	
+<section>
+<h2>Ejemplo: paginación en el Graph API de Facebook</h2>
+<pre><code data-trim>
+{
+  "data": [
+     ... Endpoint data is here
+  ],
+  "paging": {
+    "cursors": {
+      "after": "MTAxNTExOTQ1MjAwNzI5NDE=",
+      "before": "NDMyNzQyODI3OTQw"
+    },
+    "previous": "https://graph.facebook.com/me/albums?limit=25&before=NDMyNzQyODI3OTQw",
+    "next": "https://graph.facebook.com/me/albums?limit=25&after=MTAxNTExOTQ1MjAwNzI5NDE="
+  }
+}    
+</code></pre>
+</section>    
+<section>
+<h2>Negociación del contenido</h2>
+<ul>
+<li>El "formato" se especifica con el <a href="tools.ietf.org/html/rfc4288">"MIME media type"</a></li>
+<li>El cliente indica las preferencias con la cabecera <code>Accept</code>
+<ul><li>El parámetro <code>q</code> indica el "quality value" o valor de preferencia: (1.0 el preferido, 0.0 no aceptado)</li>
+</ul>
+</li>
+<li><code>Accept-Charset</code> y <code>Accept-Language</code> especifican las preferencias de codificación de caracteres e idioma, resp.</li>
+<li><code>Accept-encoding</code> permite usar compresión (el servidor debe enviar los datos comprimidos). En Ruby, <code>use Rack::Deflater</code></li>
+</ul>
+<pre>
+<code class="no-highlight" data-trim>
+Accept: application/xml;q=1.0, application/json;q=0.5, */*;q=0.0
+Accept-Language: es;q=1.0, en;q=0.5
+Accept-Charset: utf-8 
+Accept-Encoding: gzip
+</code></pre>
+</section>	
+<section>
+<h2>Implementar la negociación</h2>
+<p>Podríamos analizar manualmente las cabeceras, pero varios frameworks, p.ej. <strong>Rails</strong>, implementan "negociación automática". Para algo parecido en Sinatra necesitamos alguna librería adicional (como <a href="https://github.com/mbklein/rack-conneg"><code>rack-conneg</code></a>)</p>
+<pre><code>
+get '/hello' do
+  response = { :message => 'Hello, World!' }
+  respond_to do |wants|
+    wants.json  { response.to_json }
+    wants.xml   { response.to_xml }
+    wants.other { 
+      content_type 'text/plain'
+      error 406, "Not Acceptable" 
+    }
+  end
+end</code></pre>	
+</section>
+<section>
+<h2>Especificar formato en "APIs reales"</h2>
+<p>Aunque la visión ortodoxa es que se debe usar la cabecera HTTP <code>Accept</code>, los APIs "de ahí fuera" usan métodos más heterodoxos</p>
+<pre><code class="no-highlight">flickr.com/services/api/flickr.photos.search?tags=gatitos&amp;format=xml
+
+#Esta es la Versión antigua (v1). Twitter ya solo genera JSON (v1.1)
+https://api.twitter.com/1/statuses/user_timeline.json?user_id=UA_Universidad	
+</code></pre>
+<p>En la actualidad varios APIs ya solo generan JSON (p.ej. Facebook, Foursquare, Twitter)</p>
+</section>	
+<section data-background="rgb(92,218,133)">
+<h1>2.4 Caches</h1>
+</section>    
+<section>
+<h2>Caches</h2>
+<ul>
+<li>En lugar a volver a generar una respuesta, reutilizar la anterior</li>
+<li>Puede haber caches a diferentes niveles</li>
+<ul>
+<li>En la propia aplicación</li>
+<li>En el lado del servidor (<em>reverse proxy cache</em>)</li>
+<li>En las proximidades del cliente (<em>forward proxy cache</em>) </li>
+<li>En el propio navegador </li>
+</ul>
+</ul>
+<img src="img/diagrama_cache.png" class="stretch">
+</section>	
+<section>
+	<h2>Cache con expiración</h2>
+<ul><li>La cache se controla con cabeceras HTTP</li>
+<li>En el <strong>modo de expiración</strong> especificamos cuánto tiempo cachear la información (en segundos)
+<ul>
+	<li>En HTTP 1.0 se fijaba la "fecha de caducidad" (problemático por la necesaria "sincronización de relojes" entre cliente y servidor)</li>
+<li>Con "private" indicaríamos que no es cacheable en caches compartidas</li>
+</ul></li>
+</ul>
+<pre><code class="http" data-trim>
+HTTP/1.1 200 OK
+Content-Type: text/html;charset=utf-8
+Cache-Control: public, max-age=3600
+Expires: Mon, 09 Dec 2013 09:57:27 GMT  #esto es de HTTP/1.0
+Content-Length: 163
+...	
+</code></pre>
+</section>
+<section>
+	<h2>Ejemplo de cache con expiración</h2>
+	<img class="stretch" src="img/cache_expir_1.png">
+</section>
+<section>
+	<h2>Ejemplo de cache con expiración (II)</h2>
+	<p>30 segundos después llega otra petición de otro cliente a la misma URL</p>
+	<img class="stretch" src="img/cache_expir_2.png">
+</section>
+<section>
+	<h2>Cache con validación</h2>
+<ul>
+<li>No siempre es fácil dar un plazo de "caducidad" para los datos</li>
+<li class="fragment">Alternativa: preguntar en la petición si los datos son más nuevos que la última "versión" que tenemos. ¿Cómo saberlo?
+<ul class="fragment">	
+<li>Por fecha de modificación (cabecera <code>If-modified-since</code>)</li>
+<li>Con una "etiqueta de versión": un identificador único para la versión actual de los datos (cabecera <code>If-none-match</code>)</li>
+</ul>
+</li>
+<li class="fragment"><strong>Petición condicional</strong>: si en la petición se incluye fecha de modificación o etiqueta y los datos no han cambiado, el servidor responderá con un <code>304 Not modified</code> pero no enviará los datos en sí</li>
+</ul>
+</section>
+<section>
+<h2>Ejemplo en Sinatra</h2>
+<p>Cache con expiración</p>
+<pre><code data-trim class="ruby">
+get ‘/usuarios/:login’ do
+    usuario = UsuarioBD.get(params[:login])
+    expires 3600
+    #también se podría haber hecho "manualmente" con
+    #headers ‘Cache-Control’ => ‘max-age=3600’
+    usuario.to_json
+end	
+</code></pre>
+</section>
+<section data-background="rgb(92,218,133)">
+    <h1>2.5 HATEOAS</h1>
+    <h2 style="color:white">Hypermedia As The Engine Of The Application State</h2>
+</section>    
+<section>
+    <h2>Problema: dependencia de las URL</h2>
+    <ul>
+        <li>Tal y como hemos implementado hasta ahora los servicios REST para realizar una operación necesitamos conocer previamente la URL del recurso
+</li>
+<li>Esto presenta el problema adicional de que no podemos modificar las URL sin "romper" los clientes actuales</li>
+    </ul>
+</section>  
+<section>
+    <h2>¿Qué es HATEOAS?</h2>
+    <p>Imitar el funcionamiento de la web, en la que para seguir los pasos en un flujo vamos saltando entre enlaces, sin necesidad de conocer previamente las URL</p>
+    <img src="img/amazon.png">
+</section>  
+<section>
+    <h2>Hipermedia en REST</h2>
+    <p>En cada respuesta debemos incluir enlaces con las operaciones posibles y los recursos directamente relacionados</p>
+    <pre><code data-trim>
+       {
+  "id":"1",
+  "items": [
+    {"id":"12", "cantidad":"1"},
+    {"id":"1123", "cantidad":"2"}
+  ]
+  "link": {
+    "rel": "self",
+    "href": "http://miapi.com/pedidos/1"    
+  },
+  "link": {
+    "rel": "items",
+    "href": "http://miapi.com/pedidos/1/items"  
+  },
+  "link": {
+    "rel": "pagar",
+    "href": "http://miapi.com/pagos/pedidos/1"  
+  }
+}
+ 
+    </code></pre>
+</section>
+
+
+</div>
+</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.min.js"></script>
+
+	<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+</body>
+</html>

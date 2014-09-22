@@ -1,0 +1,186 @@
+/*
+
+Railscasts-like style (c) Visoft, Inc. (Damien White)
+
+*/
+
+.reveal pre {
+  width: 100%;
+}
+
+.reveal pre code {
+  display: block;
+  padding: 0.5em;
+  background: #232323;
+  color: #E6E1DC;
+}
+
+pre .comment,
+pre .template_comment,
+pre .javadoc,
+pre .shebang {
+  color: #BC9458;
+  font-style: italic;
+}
+
+pre .keyword,
+.ruby pre .function pre .keyword,
+pre .request,
+pre .status,
+.nginx pre .title,
+.method,
+pre .list pre .title {
+  color: #C26230;
+}
+
+pre .string,
+pre .number,
+pre .regexp,
+pre .tag pre .value,
+pre .cdata,
+pre .filter pre .argument,
+pre .attr_selector,
+.apache pre .cbracket,
+pre .date,
+.tex pre .command,
+.markdown pre .link_label {
+  color: #A5C261;
+}
+
+pre .subst {
+  color: #519F50;
+}
+
+pre .tag,
+pre .tag pre .keyword,
+pre .tag pre .title,
+pre .doctype,
+pre .sub pre .identifier,
+pre .pi,
+.input_number {
+  color: #E8BF6A;
+}
+
+pre .identifier {
+  color: #D0D0FF;
+}
+
+pre .class pre .title,
+.haskell pre .type,
+.smalltalk pre .class,
+pre .javadoctag,
+pre .yardoctag,
+pre .phpdoc {
+  text-decoration: none;
+}
+
+pre .constant {
+  color: #DA4939;
+}
+
+
+pre .symbol,
+pre .built_in,
+.ruby pre .symbol pre .string,
+.ruby pre .symbol pre .identifier,
+.markdown pre .link_url,
+pre .attribute {
+  color: #6D9CBE;
+}
+
+.markdown pre .link_url {
+  text-decoration: underline;
+}
+
+
+
+pre .params,
+pre .variable,
+.clojure pre .attribute {
+  color: #D0D0FF;
+}
+
+.css pre .tag,
+pre .rules pre .property,
+pre .pseudo,
+.tex pre .special {
+  color: #CDA869;
+}
+
+.css pre .class {
+  color: #9B703F;
+}
+
+pre .rules pre .keyword {
+  color: #C5AF75;
+}
+
+pre .rules pre .value {
+  color: #CF6A4C;
+}
+
+.css pre .id {
+  color: #8B98AB;
+}
+
+pre .annotation,
+.apache pre .sqbracket,
+.nginx pre .built_in {
+  color: #9B859D;
+}
+
+pre .preprocessor,
+pre .preprocessor *,
+pre .pragma {
+  color: #8996A8 !important;
+}
+
+pre .hexcolor,
+.css pre .value pre .number {
+  color: #A5C261;
+}
+
+pre .title,
+pre .decorator,
+.css pre .function {
+  color: #FFC66D;
+}
+
+.diff pre .header,
+pre .chunk {
+  background-color: #2F33AB;
+  color: #E6E1DC;
+  display: inline-block;
+  width: 100%;
+}
+
+.diff pre .change {
+  background-color: #4A410D;
+  color: #F8F8F8;
+  display: inline-block;
+  width: 100%;
+}
+
+pre .addition {
+  background-color: #144212;
+  color: #E6E1DC;
+  display: inline-block;
+  width: 100%;
+}
+
+pre .deletion {
+  background-color: #600;
+  color: #E6E1DC;
+  display: inline-block;
+  width: 100%;
+}
+
+.coffeescript .javascript,
+.javascript .xml,
+.tex pre .formula,
+.xml .javascript,
+.xml .vbscript,
+.xml .css,
+.xml pre .cdata {
+  opacity: 0.7;
+}
