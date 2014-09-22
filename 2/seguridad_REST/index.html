@@ -242,7 +242,7 @@ JWT::DecodeError: Signature verification failed         #falla la comprobación
 require 'Time'
 require 'jwt'
 
-token = JWT.encode({"login"=>"pepe", "exp"=>Time.now.to_i},'secret')</code>
+token = JWT.encode({"login"=>"pepe", "exp"=>Time.now.to_i+60*60*24},'secret')</code>
 </pre>
         <li>De paso solucionamos el problema de que el mismo <em>payload</em> siempre genera el mismo JWT si no cambiamos el <em>secret</em></li>
     </ul>    
