@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ejemplo de Búsqueda de imágenes en Flickr con jQuery Mobile</title>
+    
+    <!-- pantalla completa en iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+   <!-- pantalla completa en Chrome for Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- estilo de la barra de estado superior en iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- icono para escritorio (iOS/Android antiguo) -->
+    <link rel="apple-touch-icon" sizes="120x120" href="buscaFlickr-icon.png">
+    <!-- icono para escritorio (Android) -->
+    <link rel="icon" sizes="120x120" href="buscaFlickr-icon.png">
+
+    <!-- CSS de jquery mobile-->
+    <link rel="stylesheet" href="js/jquery.mobile-1.4.2.min.css"/>
+
+    <!-- jQuery y jQuery mobile -->
+    <script src="js/jquery-1.11.0.min.js"></script>
+    <script src="js/jquery.mobile-1.4.2.min.js"></script>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+</head>
+<body>
+
+<!-- página inicial, con el formulario de búsqueda -->
+<div id="pagBusqueda" data-role="page">
+    <div data-role="header">
+        <h1>Búsqueda en Flickr</h1>
+    </div>
+    <div data-role="content">
+
+        <input type="search" id="tags" placeholder="Palabras clave a buscar...   ">
+        <label for="numResults" class="select">Número de resultados:</label>
+        <select id="numResults" data-native-menu="false">
+        <option>Número de resultados</option>
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        </select>
+        <input type="button" id="botonBuscar" value="Buscar imágenes">
+    </div>
+</div>
+
+<!-- página con la lista de resultados de la búsqueda -->
+<div id="pagResultados" data-role="page">
+    <div data-role="header" data-add-back-btn="true">
+        <h1>Resultados de la búsqueda</h1>
+    </div>
+    <div data-role="content">
+        <ul id="listaResultados" data-role="listview" data-filter="true"
+            data-filter-placeholder="Filtrar resultados...">
+
+        </ul>
+    </div>
+</div>
+
+<!-- página donde se muestra la foto a "pantalla completa"-->
+<div id="pagFoto" data-role="page" >
+    <div data-role="header" data-position="fixed" data-fullscreen="true" data-add-back-btn="true">
+        <h1>Imagen</h1>
+    </div>
+    <div data-role="content">
+        <img id="fotoActual" src="">
+    </div>
+    <div data-role="footer" data-position="fixed" data-fullscreen="true" class="ui-bar">
+        <a href="#pagDatosFoto" data-transition="flip">Datos de la foto</a>
+    </div>
+</div>
+
+<!-- página con los datos de la foto -->
+<div id="pagDatosFoto" data-role="page">
+    <div data-role="header" data-add-back-btn="true">
+        <h1>Datos de la imagen</h1>
+    </div>
+    <div id="datosFoto" data-role="content">
+
+    </div>
+
+</div>
+
+<script>
+    //VARIABLES GLOBALES. EL HORROR.
+    var gDatosFotos;  //Datos de todas las fotos encontradas
+    var gIndiceFoto;  //Foto que hemos seleccionado
+
+    function buscar() {
+        //mostrar la animación de "cargando datos AJAX"
+        $.mobile.loading("show")
+        //Buscar fotos con el API de Flickr (funciona con JSONP)
+        //La documentación de esta llamada está en http://www.flickr.com/services/api/flickr.photos.search.html
+        $.ajax({
+            url: 'https://api.flickr.com/services/rest/?jsoncallback=?',
+            data: {
+                    method: 'flickr.photos.search',
+                    //clave del API, se puede solicitar una a Flickr
+                    api_key: '8bd6dfb55bc750946f80606ef5aefaca',
+                    //formato en el que queremos ver los datos. Si no ponemos esto por defecto es XML
+                    format: 'json',
+                    //palabra(s) clave de búsqueda
+                    tags: $('#tags').val(),
+                    //número de resultados
+                    per_page: $('#numResults').val()
+            },
+            dataType: "jsonp",
+            success: procesarResultados,
+            error: function() {
+                $.mobile.loading("hide")
+                alert("error")
+            }
+        })
+    }
+
+    function procesarResultados(obj) {
+        $('#listaResultados').empty()
+        numFotos = obj.photos.photo.length
+        for (i = 0; i < numFotos; i++) {
+            foto = obj.photos.photo[i]
+            //URL para el tamaño "s" de foto (75x75). Se obtiene a partir de los campos del objeto "foto"
+            //Mirar doc. en http://www.flickr.com/services/api/misc.urls.html
+            url = "http://farm" + foto.farm + ".staticflickr.com/"
+                    + foto.server + "/" + foto.id + "_" + foto.secret + "_s.jpg"
+            //generamos dinámicamente los elementos de la lista de fotos
+            var enlace = $('<a>', {href:"#pagFoto", "data-transition":"slide", "data-id": i})
+                    .append('<img src="' + url + '">')
+                    .append(obj.photos.photo[i].title)
+                    .click(function(){
+                            gIndiceFoto = $(this).attr('data-id')
+                    })
+            $('<li>')
+                    .append(enlace)
+                    .appendTo('#listaResultados')
+        }
+        //copiar los datos en una variable global. FROM HERE TO HELL
+        gDatosFotos = obj.photos.photo
+        //quitar la animación de "cargando datos"
+        $.mobile.loading("hide")
+        //saltar a la página de resultados
+        $.mobile.changePage("#pagResultados")
+    }
+
+
+    $('#pagResultados').on('pagebeforeshow', function() {
+        //para decirle a jQuery Mobile que hemos añadido elementos dinámicamente a la lista
+        //y que la ajuste correctamente
+        $('#listaResultados').listview('refresh')
+    })
+
+    //aquí especificamos la función buscar como "listener" del evento click sobre el botón buscar
+    $('#pagBusqueda').on('pageinit', function() {
+        $('#botonBuscar').click(buscar)
+    })
+
+    $('#pagFoto').on('pagebeforeshow', function() {
+        var foto = gDatosFotos[gIndiceFoto]
+        //URL para el tamaño pequeño de foto (240 en el lado más grande)
+        var url = "http://farm" + foto.farm + ".staticflickr.com/"
+                + foto.server + "/" + foto.id + "_" + foto.secret + ".jpg"
+        $('#fotoActual').attr('src', url)
+    })
+
+    $('#pagDatosFoto').on('pagebeforeshow', function() {
+        var foto = gDatosFotos[gIndiceFoto]
+        $('#datosFoto').empty()
+        $.ajax({
+            url:'https://api.flickr.com/services/rest/?jsoncallback=?',
+            data: {
+                method: 'flickr.photos.getInfo',
+                //clave del API, se puede solicitar una a Flickr
+                api_key: '8bd6dfb55bc750946f80606ef5aefaca',
+                //formato en el que queremos ver los datos. Si no ponemos esto por defecto es XML
+                format: 'json',
+                photo_id: foto.id,
+                secret: foto.secret
+            },
+            dataType: "jsonp",
+            success: function(f) {
+                $('#datosFoto')
+                        .append("<h1>" + f.photo.title._content + "</h1>")
+                        .append("<p>" + f.photo.description._content + "</p>")
+            },
+            error: function(xhr) {
+                alert("Error: " + xhr.status)
+            }
+        })
+    })
+
+
+    //inicializa parámetros globales de la aplicación
+    $(document).ready(function() {
+        //personalizar el texto del botón para ir a la página anterior
+        $.mobile.toolbar.prototype.options.backBtnText = "Atrás"
+        //ocultar barra de URL en Android
+        window.scrollTo(0, 1);
+    })
+
+</script>
+</body>
+</html>
